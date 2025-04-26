@@ -2,11 +2,12 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Scan from './pages/ScanAccess';
+import ScanAccess from './pages/ScanAccess';
 import History from './pages/History';
 import Users from './pages/UserManagement';
 import Navbar from './Navbar';
 import PrivateRoute from './PrivateRoute';
+
 
 import './App.css'
 
@@ -29,17 +30,8 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/scan"
-          element={
-            <PrivateRoute>
-              <>
-                <Navbar />
-                <Scan />
-              </>
-            </PrivateRoute>
-          }
-        />
+        <Route path="/scan" element={<PrivateRoute><ScanAccess /></PrivateRoute>} />
+
         <Route
           path="/history"
           element={
