@@ -1,92 +1,78 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from "html5-qrcode";
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import QrScanner from 'react-qr-scanner';
 
 const ScanAccess = () => {
-  const qrCodeRegionId = "reader";
-  const html5QrCodeRef = useRef(null);
-  const [result, setResult] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null); // Guardar la imagen cargada
   const navigate = useNavigate();
 
-  useEffect(() => {
-    html5QrCodeRef.current = new Html5Qrcode(qrCodeRegionId);
+  const handleScan = (result, error) => {
+    if (result && result.text && !scanned) {
+      const text = result.text;
+      const idMatch = text.match(/\/acceso\/(\d+)/);
 
-    Html5Qrcode.getCameras()
-      .then((devices) => {
-        if (devices && devices.length) {
-          // Buscar la cámara trasera
-          const backCamera = devices.find(device =>
-            device.label.toLowerCase().includes('back') ||
-            device.label.toLowerCase().includes('rear')
-          );
+      if (idMatch) {
+        const accessId = idMatch[1];
 
-          const cameraId = backCamera ? backCamera.id : devices[0].id;
+        // Guardar en LocalStorage
+        const existingLogs = JSON.parse(localStorage.getItem("accessLogs")) || [];
+        const newLog = {
+          id: accessId,
+          timestamp: new Date().toISOString(),
+        };
+        existingLogs.push(newLog);
+        localStorage.setItem("accessLogs", JSON.stringify(existingLogs));
 
-          html5QrCodeRef.current.start(
-            cameraId,
-            {
-              fps: 10,
-              qrbox: { width: 250, height: 250 },
-            },
-            (decodedText) => {
-              setResult(decodedText);
-              html5QrCodeRef.current.stop();
-            },
-            (errorMessage) => {
-              // Puedes mostrar errores si quieres
-            }
-          );
-        } else {
-          console.log("No cameras found, enable file upload mode.");
-        }
-      })
-      .catch((err) => {
-        console.error("Error getting cameras:", err);
-      });
-
-    return () => {
-      if (html5QrCodeRef.current) {
-        html5QrCodeRef.current.stop().then(() => {
-          html5QrCodeRef.current.clear();
-          navigate('/'); // Redirige al home al desmontar
-        }).catch((error) => {
-          console.error("Error stopping camera:", error);
-          navigate('/'); // Igual redirige al home si falla
-        });
+        setScanned(true); // Evitar múltiples escaneos
+        navigate(`/acceso/${accessId}`);
       }
-    };
-  }, [navigate]);
+    }
 
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    if (error) {
+      console.error(error);
+    }
+  };
 
-    try {
-      const result = await html5QrCodeRef.current.scanFile(file, true);
-      setResult(result);
-    } catch (err) {
-      console.error("Error reading QR code from file:", err);
+  // Función para manejar la carga de la imagen
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageSrc(reader.result); // Cargar la imagen en el estado
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "2rem" }}>
-      <h2>Escanea tu Código QR de Acceso</h2>
-      <div id={qrCodeRegionId} style={{ width: "300px", margin: "auto" }}></div>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-2xl mb-4">Escanear Código QR</h1>
 
-      <div style={{ marginTop: "1rem" }}>
-        <label style={{ fontSize: "1rem" }}>
-          ¿No tienes cámara? Sube una imagen:
-          <input type="file" accept="image/*" onChange={handleUpload} style={{ display: "block", margin: "1rem auto" }} />
-        </label>
+      <div className="w-80 h-80 mb-4">
+        {/* Mostrar el QR de la imagen cargada */}
+        {imageSrc && <img src={imageSrc} alt="QR Code" style={{ width: "100%" }} />}
       </div>
 
-      {result && (
-        <div style={{ marginTop: "2rem" }}>
-          <h3>Resultado:</h3>
-          <p>{result}</p>
-        </div>
-      )}
+      <div className="w-80 h-80 mb-4">
+        {/* Configuración del escáner QR */}
+        <QrScanner
+          delay={300}
+          onScan={handleScan}
+          onError={(error) => console.error(error)}
+        />
+      </div>
+
+      <div>
+        {/* Botón para cargar imagen */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="mb-4"
+        />
+      </div>
     </div>
   );
 };

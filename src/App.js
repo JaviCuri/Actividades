@@ -7,7 +7,7 @@ import History from './pages/History';
 import Users from './pages/UserManagement';
 import Navbar from './Navbar';
 import PrivateRoute from './PrivateRoute';
-
+import AccessInfo from './pages/AccessInfo';
 
 import './App.css'
 
@@ -54,6 +54,7 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/acceso/:id" element={<AccessInfo />} />
       </Routes>
     </Router>
   );
