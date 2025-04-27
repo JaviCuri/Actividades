@@ -9,40 +9,42 @@ const ScanAccess = () => {
   const [qrData, setQrData] = useState(null);
   const navigate = useNavigate();
 
-  const handleScan = (result, error) => {
+  const handleScan = (result) => {
     if (result && result.text && !scanned) {
       const text = result.text;
       const idMatch = text.match(/\/acceso\/(\d+)/);
 
       if (idMatch) {
         const accessId = idMatch[1];
-        const officeMatch = text.match(/oficina=([a-zA-Z\s]+)/); // Suponiendo que el código QR tiene un parámetro oficina
 
-        if (officeMatch) {
-          const office = officeMatch[1]; // Extraemos la oficina del código QR
+        // Simulamos obtener oficina basado en el ID
+        const fakeAccessData = [
+          { id: "1", office: "Recursos Humanos" },
+          { id: "2", office: "Contabilidad" },
+          { id: "3", office: "TI (Tecnologías de la Información)" },
+        ];
+        const accessInfo = fakeAccessData.find(item => item.id === accessId);
 
-          // Crear nuevo log sin el nombre de usuario
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+        if (currentUser && accessInfo) {
+          const existingLogs = JSON.parse(localStorage.getItem("accessLogs")) || [];
           const newLog = {
             id: accessId,
-            office: office,
+            user: currentUser.name,
+            office: accessInfo.office,
             timestamp: new Date().toISOString(),
           };
-
-          // Guardar el log en el historial
-          const existingLogs = JSON.parse(localStorage.getItem("accessLogs")) || [];
           existingLogs.push(newLog);
           localStorage.setItem("accessLogs", JSON.stringify(existingLogs));
 
           setScanned(true);
+          setQrData(`Acceso ID: ${accessId}`);
           navigate(`/acceso/${accessId}`);
         } else {
-          console.error("No se encontró la oficina en el QR");
+          console.error("Faltan datos de usuario o acceso");
         }
       }
-    }
-
-    if (error) {
-      console.error(error);
     }
   };
 
@@ -78,9 +80,9 @@ const ScanAccess = () => {
       if (code) {
         const text = code.data;
         const idMatch = text.match(/\/acceso\/(\d+)/);
+
         if (idMatch) {
           const accessId = idMatch[1];
-
           const fakeAccessData = [
             { id: "1", office: "Recursos Humanos" },
             { id: "2", office: "Contabilidad" },
@@ -113,8 +115,6 @@ const ScanAccess = () => {
     };
   };
 
-
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 p-6">
       <h1 className="text-3xl font-bold text-blue-700 mb-8 text-center">
@@ -135,14 +135,13 @@ const ScanAccess = () => {
               constraints={{
                 audio: false,
                 video: {
-                  facingMode: { exact: "environment" }, // Forzar cámara trasera
+                  facingMode: { exact: "environment" }, // cámara trasera
                   width: { ideal: 320 },
                   height: { ideal: 240 },
                 },
               }}
               style={{ width: "100%", height: "100%" }}
             />
-
           </div>
         </div>
 
