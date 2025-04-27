@@ -1,37 +1,44 @@
-import { useParams, useNavigate } from "react-router-dom";
-import accessData from "../data/fakeAccessData";
+import React, { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import fakeAccessData from '../data/fakeAccessData';
 
 const AccessInfo = () => {
     const { id } = useParams();
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Para la navegación programática
 
-    const accessInfo = accessData.find((entry) => entry.id === id);
-
-    if (!accessInfo) {
-        return (
-            <div className="flex flex-col items-center justify-center h-screen">
-                <h1 className="text-2xl mb-4">Acceso no encontrado</h1>
-                <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded"
-                    onClick={() => navigate("/")}
-                >
-                    Volver al inicio
-                </button>
-            </div>
-        );
+    // Verificar si el usuario está autenticado
+    const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+    if (!isAuthenticated) {
+        // Redirigir al login si no está autenticado
+        navigate('/login');
     }
 
+    // Obtener el nombre del usuario desde localStorage y parsear el JSON
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
+    const userName = userData ? userData.name : null;
+
+    const accessInfo = fakeAccessData.find(item => item.id === String(id));
+
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
-            <h1 className="text-2xl font-bold mb-4">Acceso Registrado</h1>
-            <p className="text-lg mb-2"><strong>Usuario:</strong> {accessInfo.user}</p>
-            <p className="text-lg mb-4"><strong>Oficina:</strong> {accessInfo.office}</p>
-            <button
-                className="px-4 py-2 bg-green-500 text-white rounded"
-                onClick={() => navigate("/")}
-            >
-                Volver al inicio
-            </button>
+        <div>
+            <h2>Detalles de acceso</h2>
+
+            {userName ? (
+                <p>Bienvenido, {userName}</p>
+            ) : (
+                <p>No se encontró el nombre del usuario.</p>
+            )}
+
+            {accessInfo ? (
+                <div>
+                    <p>ID de acceso: {accessInfo.id}</p>
+                    <p>Oficina: {accessInfo.office}</p>
+                </div>
+            ) : (
+                <p>No se encontró el acceso.</p>
+            )}
+
+            <button onClick={() => navigate('/dashboard')}>Volver al inicio</button>
         </div>
     );
 };

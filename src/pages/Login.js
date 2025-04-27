@@ -1,14 +1,23 @@
 // src/pages/Login.js
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 const Login = () => {
     const navigate = useNavigate();
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
     const handleLogin = () => {
-        localStorage.setItem('authenticated', 'true');
-        navigate('/dashboard');
+        // Aquí podrías validar usuario/contraseña si quieres
+        if (username.trim() !== '' && password.trim() !== '') {
+            localStorage.setItem('authenticated', 'true');
+            localStorage.setItem('currentUser', JSON.stringify({ name: username }));
+
+            navigate('/dashboard');
+        } else {
+            alert('Por favor ingresa un usuario y contraseña');
+        }
     };
 
     return (
@@ -26,8 +35,20 @@ const Login = () => {
             </div>
             <div className="login-form">
                 <h2>Iniciar Sesión</h2>
-                <input type="text" placeholder="Usuario" className="input-field" />
-                <input type="password" placeholder="Contraseña" className="input-field" />
+                <input
+                    type="text"
+                    placeholder="Usuario"
+                    className="input-field"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+                <input
+                    type="password"
+                    placeholder="Contraseña"
+                    className="input-field"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
                 <button onClick={handleLogin} className="login-button">Entrar</button>
             </div>
         </div>
