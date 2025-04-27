@@ -132,14 +132,17 @@ const ScanAccess = () => {
               delay={300}
               onScan={handleScan}
               onError={handleError}
-              facingMode="environment" // Se asegura de usar la cámara trasera
-              videoConstraints={{
-                facingMode: "environment",
-                width: 320,
-                height: 240,
+              constraints={{
+                audio: false,
+                video: {
+                  facingMode: { exact: "environment" }, // Forzar cámara trasera
+                  width: { ideal: 320 },
+                  height: { ideal: 240 },
+                },
               }}
-              style={{ width: "50%", height: "50%" }}
+              style={{ width: "100%", height: "100%" }}
             />
+
           </div>
         </div>
 
