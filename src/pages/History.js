@@ -1,3 +1,4 @@
+// src/pages/Historial.js
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
@@ -7,19 +8,48 @@ const Historial = () => {
 
   useEffect(() => {
     const cargarHistorial = async () => {
-      const { data, error } = await supabase
+      // Obtener todos los registros de historial
+      const { data: historial, error: errorHistorial } = await supabase
         .from("historial_accesos")
-        .select(`
-          *,
-          usuarios ( nombre )
-        `)
+        .select("*")
         .order("fecha_hora", { ascending: false });
 
-      if (error) {
-        console.error("Error al obtener historial:", error.message);
-      } else {
-        setAccessLogs(data);
+      if (errorHistorial) {
+        console.error("Error al obtener historial:", errorHistorial.message);
+        setLoading(false);
+        return;
       }
+
+      if (!historial || historial.length === 0) {
+        setAccessLogs([]);
+        setLoading(false);
+        return;
+      }
+
+      // Obtener IDs únicos de usuarios
+      const userIds = [...new Set(historial.map((h) => h.usuario_id))];
+
+      const { data: usuarios, error: errorUsuarios } = await supabase
+        .from("usuarios")
+        .select("id, nombre")
+        .in("id", userIds);
+
+      if (errorUsuarios) {
+        console.error("Error al obtener usuarios:", errorUsuarios.message);
+        setLoading(false);
+        return;
+      }
+
+      // Unir datos manualmente
+      const historialConNombres = historial.map((h) => {
+        const usuario = usuarios.find((u) => u.id === h.usuario_id);
+        return {
+          ...h,
+          nombre: usuario?.nombre || "Desconocido",
+        };
+      });
+
+      setAccessLogs(historialConNombres);
       setLoading(false);
     };
 
@@ -38,7 +68,7 @@ const Historial = () => {
         <ul className="space-y-4 w-full max-w-2xl">
           {accessLogs.map((log, index) => (
             <li key={index} className="bg-white p-4 rounded-lg shadow-md">
-              <p><strong>Usuario:</strong> {log.usuarios?.nombre || 'Desconocido'}</p>
+              <p><strong>Usuario:</strong> {log.nombre}</p>
               <p><strong>Oficina:</strong> {log.oficina || 'Desconocida'}</p>
               <p><strong>Fecha y Hora:</strong> {new Date(log.fecha_hora).toLocaleString()}</p>
             </li>
