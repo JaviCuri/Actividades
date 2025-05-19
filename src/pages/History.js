@@ -1,4 +1,3 @@
-// src/pages/Historial.js
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
@@ -12,7 +11,7 @@ const Historial = () => {
         .from("historial_accesos")
         .select(`
           *,
-          usuario ( nombre )
+          usuarios ( nombre )
         `)
         .order("fecha_hora", { ascending: false });
 
@@ -39,7 +38,7 @@ const Historial = () => {
         <ul className="space-y-4 w-full max-w-2xl">
           {accessLogs.map((log, index) => (
             <li key={index} className="bg-white p-4 rounded-lg shadow-md">
-              <p><strong>Usuario:</strong> {log.usuario?.nombre || 'Desconocido'}</p>
+              <p><strong>Usuario:</strong> {log.usuarios?.nombre || 'Desconocido'}</p>
               <p><strong>Oficina:</strong> {log.oficina || 'Desconocida'}</p>
               <p><strong>Fecha y Hora:</strong> {new Date(log.fecha_hora).toLocaleString()}</p>
             </li>
