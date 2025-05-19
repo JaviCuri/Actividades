@@ -26,10 +26,11 @@ const Login = () => {
         } else {
             const user = data.user;
             localStorage.setItem('authenticated', 'true');
-            localStorage.setItem('currentUser', JSON.stringify({ email: user.email }));
+            localStorage.setItem('currentUser', JSON.stringify({ id: user.id, email: user.email }));
             navigate('/dashboard');
         }
     };
+
 
     return (
         <div className="login-container">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import QrScanner from 'react-qr-scanner';
+import QrScanner from "react-qr-scanner";
 import jsQR from "jsqr";
 import { supabase } from "../supabaseClient";
 
@@ -10,42 +10,21 @@ const ScanAccess = () => {
   const [qrData, setQrData] = useState(null);
   const navigate = useNavigate();
 
-  const registrarAcceso = async (userEmail, oficina) => {
-    try {
-      // Obtener usuario por email
-      const { data: usuarios, error: errorUsuario } = await supabase
-        .from("usuarios")
-        .select("id")
-        .eq("email", userEmail)
-        .single();
+  const registrarAcceso = async (usuario_id, oficina) => {
+    const { error } = await supabase.from("historial_accesos").insert([
+      {
+        usuario_id: usuario_id,
+        oficina: oficina,
+        fecha_hora: new Date().toISOString(),
+      },
+    ]);
 
-      if (errorUsuario) {
-        console.error("Error al buscar usuario:", errorUsuario.message);
-        return;
-      }
-      if (!usuarios) {
-        console.error("Usuario no encontrado para el email:", userEmail);
-        return;
-      }
-
-      const { error } = await supabase.from("historial_accesos").insert([
-        {
-          id_usuario: usuarios.id,
-          oficina: oficina,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-
-      if (error) {
-        console.error("Error al guardar acceso:", error.message);
-      } else {
-        console.log("Acceso registrado correctamente");
-      }
-    } catch (err) {
-      console.error("Error inesperado en registrarAcceso:", err);
+    if (error) {
+      console.error("Error al guardar acceso:", error.message);
+    } else {
+      console.log("Acceso registrado correctamente");
     }
   };
-
 
   const handleScan = async (result) => {
     if (result && result.text && !scanned) {
@@ -60,12 +39,12 @@ const ScanAccess = () => {
           { id: "2", office: "Contabilidad" },
           { id: "3", office: "TI (Tecnologías de la Información)" },
         ];
-        const accessInfo = fakeAccessData.find(item => item.id === accessId);
+        const accessInfo = fakeAccessData.find((item) => item.id === accessId);
 
         const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
         if (currentUser && accessInfo) {
-          await registrarAcceso(currentUser.email, accessInfo.office);
+          await registrarAcceso(currentUser.id, accessInfo.office);
           setScanned(true);
           setQrData(`Acceso ID: ${accessId}`);
           navigate(`/acceso/${accessId}`);
@@ -116,12 +95,12 @@ const ScanAccess = () => {
             { id: "2", office: "Contabilidad" },
             { id: "3", office: "TI (Tecnologías de la Información)" },
           ];
-          const accessInfo = fakeAccessData.find(item => item.id === accessId);
+          const accessInfo = fakeAccessData.find((item) => item.id === accessId);
 
           const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
           if (currentUser && accessInfo) {
-            await registrarAcceso(currentUser.email, accessInfo.office);
+            await registrarAcceso(currentUser.id, accessInfo.office);
             setQrData(`Acceso ID: ${accessId}`);
             navigate(`/acceso/${accessId}`);
           } else {
@@ -142,7 +121,6 @@ const ScanAccess = () => {
 
       {/* Contenedor principal */}
       <div className="flex flex-col md:flex-row w-full max-w-6xl gap-6">
-
         {/* Sección cámara */}
         <div className="flex flex-col items-center w-full md:w-1/2 bg-white rounded-lg shadow-lg p-4">
           <h2 className="text-xl font-semibold text-blue-600 mb-4">📷 Cámara</h2>
