@@ -26,17 +26,18 @@ const RegisterUser = () => {
             return;
         }
 
-        const user = data.user;
-        const userId = user?.id;
-
-        if (userId) {
+        const userId = data.user?.id;
+        const userEmail = data.user?.email;
+        if (userId && userEmail) {
             const { error: insertError } = await supabase.from('usuarios').insert([
                 {
                     id: userId,
                     nombre: nombre,
-                    email: user.email, // 👈 Se añade el email requerido
+                    email: userEmail,
+                    contraseña: password, // 
                 },
             ]);
+
 
             if (insertError) {
                 console.error('Error al guardar nombre:', insertError.message);
