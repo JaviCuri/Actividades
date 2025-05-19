@@ -1,10 +1,9 @@
-// src/pages/Register.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import './Login.css'; 
+import './Login.css';
 
-const Register = () => {
+const RegisterUser = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [nombre, setNombre] = useState('');
@@ -16,7 +15,6 @@ const Register = () => {
             return;
         }
 
-        // Registrar usuario con email y contraseña en Supabase Auth
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -28,7 +26,6 @@ const Register = () => {
             return;
         }
 
-        // Insertar el nombre en la tabla 'usuarios' vinculando por ID de usuario
         const userId = data.user?.id;
         if (userId) {
             const { error: insertError } = await supabase.from('usuarios').insert([
@@ -87,4 +84,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default RegisterUser;

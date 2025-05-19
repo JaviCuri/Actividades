@@ -8,7 +8,7 @@ import Users from './pages/UserManagement';
 import Navbar from './Navbar';
 import PrivateRoute from './PrivateRoute';
 import AccessInfo from './pages/AccessInfo';
-import Register from './pages/Register';
+import Register from './pages/RegisterUser';
 
 import './App.css'
 
