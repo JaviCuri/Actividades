@@ -11,17 +11,41 @@ const ScanAccess = () => {
   const navigate = useNavigate();
 
   const registrarAcceso = async (userEmail, oficina) => {
-    const { error } = await supabase.from("historial_accesos").insert([
-      {
-        email: userEmail,
-        oficina: oficina,
-        timestamp: new Date().toISOString(),
-      },
-    ]);
-    if (error) {
-      console.error("Error al guardar acceso:", error.message);
+    try {
+      // Obtener usuario por email
+      const { data: usuarios, error: errorUsuario } = await supabase
+        .from("usuarios")
+        .select("id")
+        .eq("email", userEmail)
+        .single();
+
+      if (errorUsuario) {
+        console.error("Error al buscar usuario:", errorUsuario.message);
+        return;
+      }
+      if (!usuarios) {
+        console.error("Usuario no encontrado para el email:", userEmail);
+        return;
+      }
+
+      const { error } = await supabase.from("historial_accesos").insert([
+        {
+          id_usuario: usuarios.id,
+          oficina: oficina,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) {
+        console.error("Error al guardar acceso:", error.message);
+      } else {
+        console.log("Acceso registrado correctamente");
+      }
+    } catch (err) {
+      console.error("Error inesperado en registrarAcceso:", err);
     }
   };
+
 
   const handleScan = async (result) => {
     if (result && result.text && !scanned) {
