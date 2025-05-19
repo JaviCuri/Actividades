@@ -26,12 +26,15 @@ const RegisterUser = () => {
             return;
         }
 
-        const userId = data.user?.id;
+        const user = data.user;
+        const userId = user?.id;
+
         if (userId) {
             const { error: insertError } = await supabase.from('usuarios').insert([
                 {
                     id: userId,
                     nombre: nombre,
+                    email: user.email, // 👈 Se añade el email requerido
                 },
             ]);
 
