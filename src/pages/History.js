@@ -12,9 +12,9 @@ const Historial = () => {
         .from("historial_accesos")
         .select(`
           *,
-          usuarios ( nombre )
+          usuario ( nombre )
         `)
-        .order("timestamp", { ascending: false });
+        .order("fecha_hora", { ascending: false });
 
       if (error) {
         console.error("Error al obtener historial:", error.message);
@@ -39,9 +39,9 @@ const Historial = () => {
         <ul className="space-y-4 w-full max-w-2xl">
           {accessLogs.map((log, index) => (
             <li key={index} className="bg-white p-4 rounded-lg shadow-md">
-              <p><strong>Usuario:</strong> {log.usuarios?.nombre || 'Desconocido'}</p>
+              <p><strong>Usuario:</strong> {log.usuario?.nombre || 'Desconocido'}</p>
               <p><strong>Oficina:</strong> {log.oficina || 'Desconocida'}</p>
-              <p><strong>Fecha y Hora:</strong> {new Date(log.timestamp).toLocaleString()}</p>
+              <p><strong>Fecha y Hora:</strong> {new Date(log.fecha_hora).toLocaleString()}</p>
             </li>
           ))}
         </ul>
