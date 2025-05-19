@@ -10,7 +10,10 @@ const Historial = () => {
     const cargarHistorial = async () => {
       const { data, error } = await supabase
         .from("historial_accesos")
-        .select("*")
+        .select(`
+          *,
+          usuarios ( nombre )
+        `)
         .order("timestamp", { ascending: false });
 
       if (error) {
@@ -36,6 +39,7 @@ const Historial = () => {
         <ul className="space-y-4 w-full max-w-2xl">
           {accessLogs.map((log, index) => (
             <li key={index} className="bg-white p-4 rounded-lg shadow-md">
+              <p><strong>Usuario:</strong> {log.usuarios?.nombre || 'Desconocido'}</p>
               <p><strong>Oficina:</strong> {log.oficina || 'Desconocida'}</p>
               <p><strong>Fecha y Hora:</strong> {new Date(log.timestamp).toLocaleString()}</p>
             </li>

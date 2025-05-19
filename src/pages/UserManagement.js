@@ -10,7 +10,15 @@ const UserManagement = () => {
     const fetchAccessLogs = async () => {
       const { data, error } = await supabase
         .from("ingresos_usuarios")
-        .select("*")
+        .select(`
+          id,
+          oficina,
+          created_at,
+          usuarios (
+            nombre,
+            email
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -36,7 +44,7 @@ const UserManagement = () => {
         <ul className="space-y-4 w-full max-w-2xl">
           {accessLogs.map((log, index) => (
             <li key={index} className="bg-white p-4 rounded-lg shadow-md">
-              <p><strong>Nombre del Usuario:</strong> {log.nombre_usuario || 'Desconocido'}</p>
+              <p><strong>Nombre del Usuario:</strong> {log.usuarios?.nombre || 'Desconocido'}</p>
               <p><strong>Oficina:</strong> {log.oficina}</p>
               {log.created_at && (
                 <p><strong>Fecha:</strong> {new Date(log.created_at).toLocaleString()}</p>
