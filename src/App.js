@@ -8,6 +8,7 @@ import Users from './pages/UserManagement';
 import Navbar from './Navbar';
 import PrivateRoute from './PrivateRoute';
 import AccessInfo from './pages/AccessInfo';
+import Register from './pages/Register';
 
 import './App.css'
 
@@ -17,7 +18,7 @@ function App() {
       <Routes>
         {/* Ruta pública */}
         <Route path="/" element={<Login />} />
-
+        <Route path="/register" element={<Register />} />
         {/* Rutas protegidas */}
         <Route
           path="/dashboard"

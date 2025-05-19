@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QrScanner from 'react-qr-scanner';
 import jsQR from "jsqr";
+import { supabase } from "../supabaseClient";
 
 const ScanAccess = () => {
   const [scanned, setScanned] = useState(false);
@@ -9,7 +10,20 @@ const ScanAccess = () => {
   const [qrData, setQrData] = useState(null);
   const navigate = useNavigate();
 
-  const handleScan = (result) => {
+  const registrarAcceso = async (userEmail, oficina) => {
+    const { error } = await supabase.from("historial_accesos").insert([
+      {
+        email: userEmail,
+        oficina: oficina,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+    if (error) {
+      console.error("Error al guardar acceso:", error.message);
+    }
+  };
+
+  const handleScan = async (result) => {
     if (result && result.text && !scanned) {
       const text = result.text;
       const idMatch = text.match(/\/acceso\/(\d+)/);
@@ -17,7 +31,6 @@ const ScanAccess = () => {
       if (idMatch) {
         const accessId = idMatch[1];
 
-        // Simulamos obtener oficina basado en el ID
         const fakeAccessData = [
           { id: "1", office: "Recursos Humanos" },
           { id: "2", office: "Contabilidad" },
@@ -28,16 +41,7 @@ const ScanAccess = () => {
         const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
         if (currentUser && accessInfo) {
-          const existingLogs = JSON.parse(localStorage.getItem("accessLogs")) || [];
-          const newLog = {
-            id: accessId,
-            user: currentUser.name,
-            office: accessInfo.office,
-            timestamp: new Date().toISOString(),
-          };
-          existingLogs.push(newLog);
-          localStorage.setItem("accessLogs", JSON.stringify(existingLogs));
-
+          await registrarAcceso(currentUser.email, accessInfo.office);
           setScanned(true);
           setQrData(`Acceso ID: ${accessId}`);
           navigate(`/acceso/${accessId}`);
@@ -64,10 +68,10 @@ const ScanAccess = () => {
     }
   };
 
-  const processQRCode = (imageData) => {
+  const processQRCode = async (imageData) => {
     const image = new Image();
     image.src = imageData;
-    image.onload = () => {
+    image.onload = async () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       canvas.height = image.height;
@@ -93,16 +97,7 @@ const ScanAccess = () => {
           const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
           if (currentUser && accessInfo) {
-            const existingLogs = JSON.parse(localStorage.getItem("accessLogs")) || [];
-            const newLog = {
-              id: accessId,
-              user: currentUser.name,
-              office: accessInfo.office,
-              timestamp: new Date().toISOString(),
-            };
-            existingLogs.push(newLog);
-            localStorage.setItem("accessLogs", JSON.stringify(existingLogs));
-
+            await registrarAcceso(currentUser.email, accessInfo.office);
             setQrData(`Acceso ID: ${accessId}`);
             navigate(`/acceso/${accessId}`);
           } else {
@@ -135,7 +130,7 @@ const ScanAccess = () => {
               constraints={{
                 audio: false,
                 video: {
-                  facingMode: { exact: "environment" }, // cámara trasera
+                  facingMode: { exact: "environment" },
                   width: { ideal: 320 },
                   height: { ideal: 240 },
                 },
@@ -166,7 +161,6 @@ const ScanAccess = () => {
             <p className="text-sm text-gray-600 mt-4 text-center">{qrData}</p>
           )}
         </div>
-
       </div>
     </div>
   );
